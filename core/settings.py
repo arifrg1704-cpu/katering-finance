@@ -87,12 +87,8 @@ LOGOUT_REDIRECT_URL = '/login/'
 # ==============================================================================
 # PEMISAHAN SETTINGS LOKAL & PYTHONANYWHERE
 # ==============================================================================
-# Coba muat settings_local jika ada (untuk development)
-# Jika tidak ada, maka akan menggunakan setting base yang sudah ada ALLOWED_HOSTS-nya
-try:
-    if os.path.exists(os.path.join(BASE_DIR, 'core', 'settings_local.py')):
-        from .settings_local import *
-    elif os.environ.get('ENV') == 'pythonanywhere' or 'pythonanywhere' in os.environ.get('HOSTNAME', ''):
-        from .settings_pythonanywhere import *
-except ImportError:
-    pass
+if os.environ.get('ENV') == 'pythonanywhere' or 'pythonanywhere' in os.environ.get('HOSTNAME', ''):
+    DEBUG = False
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+else:
+    DEBUG = True
