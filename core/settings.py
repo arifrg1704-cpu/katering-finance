@@ -11,7 +11,7 @@ import os
 
 # Set DEFAULT DEBUG & ALLOWED_HOSTS sebelum di-override
 DEBUG = False
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['argx2works.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
