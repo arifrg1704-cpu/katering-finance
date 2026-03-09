@@ -7,9 +7,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-finance-pr0j3ct-s3cr3t-k3y-ch4ng3-in-pr0duct10n'
 
-DEBUG = True
+import os
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+# Set DEFAULT DEBUG & ALLOWED_HOSTS sebelum di-override
+DEBUG = False
+ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -81,3 +83,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
+
+# ==============================================================================
+# PEMISAHAN SETTINGS LOKAL & PYTHONANYWHERE
+# ==============================================================================
+if os.environ.get('ENV') == 'pythonanywhere' or 'pythonanywhere' in os.environ.get('HOSTNAME', ''):
+    try:
+        from .settings_pythonanywhere import *
+    except ImportError:
+        pass
+else:
+    try:
+        from .settings_local import *
+    except ImportError:
+        pass
