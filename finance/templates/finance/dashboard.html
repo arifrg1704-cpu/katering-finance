@@ -15,7 +15,7 @@
                 </div>
                 <div>
                     <div class="text-muted small fw-medium">Total Uang Masuk</div>
-                    <div class="fs-5 fw-bold text-dark">Rp {{ totals.total_uang_masuk|intcomma }}</div>
+                    <div class="fs-5 fw-bold text-dark">Rp {{ totals.total_uang_masuk|floatformat:2|intcomma }}</div>
                 </div>
             </div>
         </div>
@@ -28,7 +28,7 @@
                 </div>
                 <div>
                     <div class="text-muted small fw-medium">Total Fee 5%</div>
-                    <div class="fs-5 fw-bold text-dark">Rp {{ totals.total_fee_5|intcomma }}</div>
+                    <div class="fs-5 fw-bold text-dark">Rp {{ totals.total_fee_5|floatformat:2|intcomma }}</div>
                 </div>
             </div>
         </div>
@@ -41,7 +41,7 @@
                 </div>
                 <div>
                     <div class="text-muted small fw-medium">Total Fee 80%</div>
-                    <div class="fs-5 fw-bold text-dark">Rp {{ totals.total_fee_bersih_80|intcomma }}</div>
+                    <div class="fs-5 fw-bold text-dark">Rp {{ totals.total_fee_bersih_80|floatformat:2|intcomma }}</div>
                 </div>
             </div>
         </div>
@@ -54,7 +54,8 @@
                 </div>
                 <div>
                     <div class="text-muted small fw-medium">Total Fee 20%</div>
-                    <div class="fs-5 fw-bold text-dark">Rp {{ totals.total_fee_pemilik_20|intcomma }}</div>
+                    <div class="fs-5 fw-bold text-dark">Rp {{ totals.total_fee_pemilik_20|floatformat:2|intcomma }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -120,7 +121,7 @@
                         <span class="badge bg-warning bg-opacity-10 text-warning badge-status">Belum Dibayar</span>
                         {% endif %}
                     </td>
-                    <td class="text-end">Rp {{ t.total_uang_masuk|intcomma }}</td>
+                    <td class="text-end">Rp {{ t.total_uang_masuk|floatformat:2|intcomma }}</td>
                     <td>
                         <a href="{% url 'finance:transaksi_report' t.pk %}" class="btn btn-sm btn-outline-secondary">
                             <i class="bi bi-eye"></i>
