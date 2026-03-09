@@ -6,7 +6,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <form class="d-flex gap-2" method="get">
-        <input type="text" name="q" class="form-control form-control-sm" placeholder="Cari dinas..." value="{{ q }}">
+        <input type="text" name="q" class="form-control_form-control-sm" placeholder="Cari dinas..." value="{{ q }}">
         <button class="btn btn-sm btn-outline-primary"><i class="bi bi-search"></i></button>
     </form>
     <a href="{% url 'finance:dinas_create' %}" class="btn btn-sm btn-primary">
