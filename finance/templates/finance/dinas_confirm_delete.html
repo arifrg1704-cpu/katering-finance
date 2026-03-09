@@ -1,0 +1,30 @@
+{% extends "finance/base.html" %}
+
+{% block title %}Hapus Dinas{% endblock %}
+{% block page_title %}Hapus Dinas{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="card stat-card border-danger">
+            <div class="card-body p-4 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-exclamation-triangle text-danger" style="font-size:3rem"></i>
+                </div>
+                <h5 class="fw-semibold">Konfirmasi Hapus</h5>
+                <p class="text-muted">Apakah Anda yakin ingin menghapus dinas <strong>{{ object.nama_dinas }}</strong>?
+                </p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2 justify-content-center mt-3">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i>Hapus
+                        </button>
+                        <a href="{% url 'finance:dinas_list' %}" class="btn btn-light">Batal</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

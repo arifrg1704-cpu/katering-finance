@@ -1,0 +1,175 @@
+{% extends "finance/base.html" %}
+{% load humanize finance_tags %}
+
+{% block title %}Laporan Transaksi{% endblock %}
+{% block page_title %}Laporan Transaksi{% endblock %}
+
+{% block content %}
+<!-- Header Info -->
+<div class="card stat-card mb-4">
+    <div class="card-body">
+        <div class="col-md-12">
+            <table class="table table-borderless table-sm mb-0">
+                <tr>
+                    <td class="text-muted fw-medium" style="width:130px">Nama Dinas</td>
+                    <td>: {{ transaksi.client.dinas.nama_dinas }}</td>
+                </tr>
+                <tr>
+                    <td class="text-muted fw-medium">Client</td>
+                    <td>: {{ transaksi.client.nama_client }}</td>
+                </tr>
+                <tr>
+                    <td class="text-muted fw-medium">Alamat Dinas</td>
+                    <td>: {{ transaksi.client.dinas.alamat }}</td>
+                </tr>
+                <tr>
+                    <td class="text-muted fw-medium">Tanggal</td>
+                    <td>: {{ transaksi.tanggal|date:"d F Y" }}</td>
+                </tr>
+                <tr>
+                    <td class="text-muted fw-medium">Status</td>
+                    <td>:
+                        {% if transaksi.status_transfer == 'Sudah Dibayar' %}
+                        <span class="badge bg-success bg-opacity-10 text-success badge-status">Sudah Dibayar</span>
+                        {% else %}
+                        <span class="badge bg-warning bg-opacity-10 text-warning badge-status">Belum Dibayar</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    {% if transaksi.catatan %}
+    <div class="mt-2 p-2 bg-light rounded">
+        <small class="text-muted fw-medium">Catatan:</small>
+        <small>{{ transaksi.catatan }}</small>
+    </div>
+    {% endif %}
+</div>
+</div>
+
+<!-- Report Table -->
+<div class="table-wrapper mb-4">
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h6 class="mb-0 fw-semibold"><i class="bi bi-table me-2"></i>Detail Transaksi</h6>
+        <div class="d-flex align-items-center gap-2">
+            <form method="get" class="d-flex align-items-center gap-2 m-0">
+                <select name="filter_fee" class="form-select form-select-sm" onchange="this.form.submit()"
+                    style="width: auto;">
+                    <option value="">Semua Status Fee</option>
+                    <option value="sudah" {% if filter_fee == 'sudah' %}selected{% endif %}>Sudah Trf</option>
+                    <option value="belum" {% if filter_fee == 'belum' %}selected{% endif %}>Belum Trf</option>
+                </select>
+            </form>
+            <a href="{% url 'finance:export_pdf' transaksi.pk %}" class="btn btn-sm btn-danger">
+                <i class="bi bi-file-earmark-pdf me-1"></i>Export PDF
+            </a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th style="width:40px">No</th>
+                    <th class="text-end">Uang Masuk</th>
+                    <th class="text-end">Fee (5%)</th>
+                    <th class="text-end">Fee Bersih (80%)</th>
+                    <th class="text-end">Fee Pemilik (20%)</th>
+                    <th class="text-end">Pajak</th>
+                    <th class="text-end">Bersih</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in details %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td class="text-end">Rp {{ d.uang_masuk|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ d.fee_5_persen|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ d.fee_bersih_80|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ d.fee_pemilik_20|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ d.pajak|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ d.bersih|floor_number|intcomma }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">Tidak ada detail transaksi.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if details %}
+            <tfoot>
+                <tr class="table-primary fw-bold">
+                    <td>TOTAL</td>
+                    <td class="text-end">Rp {{ transaksi.total_uang_masuk|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ transaksi.total_fee_5_persen|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ transaksi.total_fee_bersih_80|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ transaksi.total_fee_pemilik_20|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ transaksi.total_pajak|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ transaksi.total_bersih|floor_number|intcomma }}</td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+<!-- Alternative Report Table -->
+<div class="table-wrapper mb-4 mt-4">
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-semibold"><i class="bi bi-table-alt me-2"></i>Detail Transaksi (Alternatif)</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th style="width:40px">No</th>
+                    <th class="text-end">Uang Masuk</th>
+                    <th class="text-end">Fee 5%</th>
+                    <th class="text-end">Fee Bersih (80%)</th>
+                    <th class="text-end">Fee Pemilik (20%)</th>
+                    <th class="text-end">Pajak</th>
+                    <th class="text-end">Bersih</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in details %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td class="text-end">Rp {{ d.uang_masuk|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ d.fee_5_persen|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ d.fee_bersih_80|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ d.fee_pemilik_20|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ d.pajak|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ d.bersih_alt|floor_number|intcomma }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">Tidak ada detail transaksi.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if details %}
+            <tfoot>
+                <tr class="table-info fw-bold">
+                    <td>TOTAL</td>
+                    <td class="text-end">Rp {{ transaksi.total_uang_masuk|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ transaksi.total_fee_5_persen|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ transaksi.total_fee_bersih_80|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ transaksi.total_fee_pemilik_20|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ transaksi.total_pajak|floor_number|intcomma }}</td>
+                    <td class="text-end">Rp {{ transaksi.total_bersih_alt|floor_number|intcomma }}</td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="d-flex gap-2">
+    <a href="{% url 'finance:transaksi_update' transaksi.pk %}" class="btn btn-primary">
+        <i class="bi bi-pencil me-1"></i>Edit
+    </a>
+    <a href="{% url 'finance:transaksi_list' %}" class="btn btn-light">Kembali</a>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "finance/base.html" %}
+
+{% block title %}Daftar Dinas{% endblock %}
+{% block page_title %}Daftar Dinas{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <form class="d-flex gap-2" method="get">
+        <input type="text" name="q" class="form-control form-control-sm" placeholder="Cari dinas..." value="{{ q }}">
+        <button class="btn btn-sm btn-outline-primary"><i class="bi bi-search"></i></button>
+    </form>
+    <a href="{% url 'finance:dinas_create' %}" class="btn btn-sm btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Tambah Dinas
+    </a>
+</div>
+
+<div class="table-wrapper">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th style="width:40px">No</th>
+                    <th>Nama Dinas</th>
+                    <th>Alamat</th>
+                    <th>Jumlah Client</th>
+                    <th style="width:120px">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in dinas_list %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td class="fw-medium">{{ d.nama_dinas }}</td>
+                    <td>{{ d.alamat }}</td>
+                    <td><span class="badge bg-primary bg-opacity-10 text-primary badge-status">{{ d.clients.count }}</span></td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'finance:dinas_update' d.pk %}" class="btn btn-outline-primary"
+                                title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'finance:dinas_delete' d.pk %}" class="btn btn-outline-danger"
+                                title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">Belum ada data dinas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

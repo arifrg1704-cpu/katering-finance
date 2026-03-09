@@ -1,0 +1,229 @@
+{% extends "finance/base.html" %}
+{% load humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    <!-- Transaction Header -->
+    <div class="card stat-card mb-4">
+        <div class="card-header bg-white border-bottom">
+            <h6 class="mb-0 fw-semibold"><i class="bi bi-info-circle me-2"></i>Informasi Transaksi</h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                {% for field in form %}
+                <div class="col-md-6">
+                    <label for="{{ field.id_for_label }}" class="form-label fw-medium">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="invalid-feedback d-block">{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Details -->
+    <div class="card stat-card mb-4">
+        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold"><i class="bi bi-list-ol me-2"></i>Detail Transaksi</h6>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="add-detail-btn">
+                <i class="bi bi-plus-lg me-1"></i>Tambah Baris
+            </button>
+        </div>
+        <div class="card-body p-0">
+            {{ formset.management_form }}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="detail-table">
+                    <thead>
+                        <tr>
+                            <th style="width:40px">#</th>
+                            <th>Uang Masuk</th>
+                            <th>Pajak</th>
+                            <th class="text-end">Fee 5%</th>
+                            <th class="text-end">Fee Bersih 80%</th>
+                            <th class="text-end">Fee Pemilik 20%</th>
+                            <th class="text-end">Bersih</th>
+                            <th style="width:50px"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="detail-body">
+                        {% for detail_form in formset %}
+                        <tr class="detail-row {% if detail_form.DELETE.value %}d-none{% endif %}">
+                            <td class="row-number"></td>
+                            <td>
+                                {{ detail_form.id }}
+                                {{ detail_form.uang_masuk }}
+                                {% if detail_form.uang_masuk.errors %}
+                                <div class="invalid-feedback d-block">{{ detail_form.uang_masuk.errors.0 }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ detail_form.pajak }}
+                                {% if detail_form.pajak.errors %}
+                                <div class="invalid-feedback d-block">{{ detail_form.pajak.errors.0 }}</div>
+                                {% endif %}
+                            </td>
+                            <td class="text-end calc-fee5">0</td>
+                            <td class="text-end calc-fee80">0</td>
+                            <td class="text-end calc-fee20">0</td>
+                            <td class="text-end calc-bersih">0</td>
+                            <td>
+                                <div style="display:none">{{ detail_form.DELETE }}</div>
+                                <button type="button" class="btn btn-sm btn-outline-danger delete-row-btn"
+                                    title="Hapus baris">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light fw-bold">
+                            <td colspan="2">TOTAL</td>
+                            <td class="text-end" id="total-pajak">0</td>
+                            <td class="text-end" id="total-fee5">0</td>
+                            <td class="text-end" id="total-fee80">0</td>
+                            <td class="text-end" id="total-fee20">0</td>
+                            <td class="text-end" id="total-bersih">0</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg me-1"></i>Simpan Transaksi
+        </button>
+        <a href="{% url 'finance:transaksi_list' %}" class="btn btn-light">Batal</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const totalFormsInput = document.getElementById('id_details-TOTAL_FORMS');
+        const detailBody = document.getElementById('detail-body');
+
+        // --- Numbering ---
+        function updateRowNumbers() {
+            let num = 1;
+            detailBody.querySelectorAll('.detail-row:not(.d-none)').forEach(row => {
+                row.querySelector('.row-number').textContent = num++;
+            });
+        }
+
+        // --- Formatting ---
+        function formatNumber(n) {
+            return n.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        // --- Calculate a single row ---
+        function calcRow(row) {
+            const uangInput = row.querySelector('.uang-masuk-input') || row.querySelector('[name$="-uang_masuk"]');
+            const pajakInput = row.querySelector('.pajak-input') || row.querySelector('[name$="-pajak"]');
+            if (!uangInput) return;
+            const uang = parseFloat(uangInput.value) || 0;
+            const pajak = parseFloat(pajakInput.value) || 0;
+            const fee5 = uang * 0.05;
+            const fee80 = fee5 * 0.8;
+            const fee20 = fee5 * 0.2;
+            const bersih = uang - fee5 - pajak;
+
+            row.querySelector('.calc-fee5').textContent = formatNumber(fee5);
+            row.querySelector('.calc-fee80').textContent = formatNumber(fee80);
+            row.querySelector('.calc-fee20').textContent = formatNumber(fee20);
+            row.querySelector('.calc-bersih').textContent = formatNumber(bersih);
+        }
+
+        // --- Calculate all rows + totals ---
+        function calcAll() {
+            let tPajak = 0, tFee5 = 0, tFee80 = 0, tFee20 = 0, tBersih = 0;
+            detailBody.querySelectorAll('.detail-row:not(.d-none)').forEach(row => {
+                calcRow(row);
+                const uangInput = row.querySelector('.uang-masuk-input') || row.querySelector('[name$="-uang_masuk"]');
+                const pajakInput = row.querySelector('.pajak-input') || row.querySelector('[name$="-pajak"]');
+                const uang = parseFloat(uangInput?.value) || 0;
+                const pajak = parseFloat(pajakInput?.value) || 0;
+                const fee5 = uang * 0.05;
+                tPajak += pajak;
+                tFee5 += fee5;
+                tFee80 += fee5 * 0.8;
+                tFee20 += fee5 * 0.2;
+                tBersih += uang - fee5 - pajak;
+            });
+            document.getElementById('total-pajak').textContent = formatNumber(tPajak);
+            document.getElementById('total-fee5').textContent = formatNumber(tFee5);
+            document.getElementById('total-fee80').textContent = formatNumber(tFee80);
+            document.getElementById('total-fee20').textContent = formatNumber(tFee20);
+            document.getElementById('total-bersih').textContent = formatNumber(tBersih);
+        }
+
+        // --- Event delegation ---
+        detailBody.addEventListener('input', calcAll);
+
+        // --- Delete row ---
+        detailBody.addEventListener('click', function (e) {
+            const btn = e.target.closest('.delete-row-btn');
+            if (!btn) return;
+            const row = btn.closest('.detail-row');
+            const deleteCheckbox = row.querySelector('[name$="-DELETE"]');
+            if (deleteCheckbox) {
+                deleteCheckbox.checked = true;
+            }
+            row.classList.add('d-none');
+            updateRowNumbers();
+            calcAll();
+        });
+
+        // --- Add row ---
+        document.getElementById('add-detail-btn').addEventListener('click', function () {
+            const totalForms = parseInt(totalFormsInput.value);
+            const firstRow = detailBody.querySelector('.detail-row');
+            if (!firstRow) return;
+            const newRow = firstRow.cloneNode(true);
+            newRow.classList.remove('d-none');
+
+            // Update input names/ids
+            newRow.querySelectorAll('input, select, textarea').forEach(input => {
+                if (input.name) {
+                    input.name = input.name.replace(/-\d+-/, '-' + totalForms + '-');
+                }
+                if (input.id) {
+                    input.id = input.id.replace(/-\d+-/, '-' + totalForms + '-');
+                }
+                if (input.type === 'checkbox') {
+                    input.checked = false;
+                } else if (input.type !== 'hidden') {
+                    input.value = '';
+                } else if (!input.name.includes('TOTAL_FORMS') && !input.name.includes('INITIAL_FORMS')) {
+                    input.value = '';
+                }
+            });
+
+            // Reset calculated cells
+            newRow.querySelector('.calc-fee5').textContent = '0';
+            newRow.querySelector('.calc-fee80').textContent = '0';
+            newRow.querySelector('.calc-fee20').textContent = '0';
+            newRow.querySelector('.calc-bersih').textContent = '0';
+
+            detailBody.appendChild(newRow);
+            totalFormsInput.value = totalForms + 1;
+            updateRowNumbers();
+        });
+
+        // --- Initial ---
+        updateRowNumbers();
+        calcAll();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,182 @@
+{% load humanize finance_tags %}
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Laporan Transaksi - {{ transaksi.client.nama_client }}</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1.5cm;
+        }
+
+        * {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-size: 11px;
+            color: #1a1a1a;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #1e3a5f;
+            padding-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            color: #1e3a5f;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            font-size: 11px;
+            color: #555;
+        }
+
+        .info-table {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .info-table td {
+            padding: 2px 8px 2px 0;
+            vertical-align: top;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            width: 120px;
+        }
+
+        .info-value {
+            color: #1a1a1a;
+        }
+
+        table.report {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+        }
+
+        table.report th {
+            background: #1e3a5f;
+            color: #fff;
+            padding: 8px 10px;
+            text-align: right;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        table.report th:first-child {
+            text-align: center;
+        }
+
+        table.report td {
+            padding: 6px 10px;
+            text-align: right;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        table.report td:first-child {
+            text-align: center;
+        }
+
+        table.report tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        table.report tfoot td {
+            font-weight: bold;
+            background: #eef2f7;
+            border-top: 2px solid #1e3a5f;
+            padding: 8px 10px;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 9px;
+            color: #999;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <p>{{ transaksi.client.dinas.nama_dinas }}</p>
+    </div>
+
+    <table class="info-table">
+        <tr>
+            <td class="info-label">Nama Dinas</td>
+            <td class="info-value">: {{ transaksi.client.dinas.nama_dinas }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Client</td>
+            <td class="info-value">: {{ transaksi.client.nama_client }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Alamat</td>
+            <td class="info-value">: {{ transaksi.client.dinas.alamat }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Tanggal</td>
+            <td class="info-value">: {{ transaksi.tanggal|date:"d F Y" }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Status</td>
+            <td class="info-value">: {{ transaksi.status_transfer }}</td>
+        </tr>
+    </table>
+
+    <table class="report">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Uang Masuk</th>
+                <th>Fee (5%)</th>
+                <th>Pajak</th>
+                <th>Bersih</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in details %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>Rp {{ d.uang_masuk|floor_number|intcomma }}</td>
+                <td>Rp {{ d.fee_5_persen|floor_number|intcomma }}</td>
+                <td>Rp {{ d.pajak|floor_number|intcomma }}</td>
+                <td>Rp {{ d.bersih|floor_number|intcomma }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>TOTAL</td>
+                <td>Rp {{ transaksi.total_uang_masuk|floor_number|intcomma }}</td>
+                <td>Rp {{ transaksi.total_fee_5_persen|floor_number|intcomma }}</td>
+                <td>Rp {{ transaksi.total_pajak|floor_number|intcomma }}</td>
+                <td>Rp {{ transaksi.total_bersih|floor_number|intcomma }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    {% if transaksi.catatan %}
+    <p style="font-size:10px;"><strong>Catatan:</strong> {{ transaksi.catatan }}</p>
+    {% endif %}
+
+    <div class="footer">
+        <p>Dicetak pada {{ "now"|date:"d F Y H:i" }} — Finance System</p>
+    </div>
+</body>
+
+</html>
