@@ -38,8 +38,11 @@
                 <tr>
                     <td class="td-no">{{ forloop.counter }}</td>
                     <td class="fw-medium" data-label="Client">{{ c.nama_client }}</td>
-                    <td data-label="Dinas"><span class="badge bg-info bg-opacity-10 text-info badge-status">{{
-                            c.dinas.nama_dinas }}</span></td>
+                    <td data-label="Dinas">
+                        <span class="badge bg-info bg-opacity-10 text-info badge-status">
+                            {{ c.dinas.nama_dinas }}
+                        </span>
+                    </td>
                     <td data-label="No. HP">{{ c.no_hp|default:"-" }}</td>
                     <td data-label="Keterangan">{{ c.keterangan|default:"-"|truncatechars:50 }}</td>
                     <td class="td-aksi">
