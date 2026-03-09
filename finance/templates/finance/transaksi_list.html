@@ -30,7 +30,7 @@
 
 <div class="table-wrapper">
     <div class="table-responsive">
-        <table class="table table-hover">
+        <table class="table table-hover table-stack">
             <thead>
                 <tr>
                     <th style="width:40px">No</th>
@@ -46,20 +46,20 @@
             <tbody>
                 {% for t in transaksi_list %}
                 <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ t.tanggal|date:"d M Y" }}</td>
-                    <td class="fw-medium">{{ t.client.nama_client }}</td>
-                    <td>{{ t.client.dinas.nama_dinas }}</td>
-                    <td>
+                    <td class="td-no">{{ forloop.counter }}</td>
+                    <td data-label="Tanggal">{{ t.tanggal|date:"d M Y" }}</td>
+                    <td class="fw-medium" data-label="Client">{{ t.client.nama_client }}</td>
+                    <td data-label="Dinas">{{ t.client.dinas.nama_dinas }}</td>
+                    <td data-label="Status">
                         {% if t.status_transfer == 'Sudah Dibayar' %}
                         <span class="badge bg-success bg-opacity-10 text-success badge-status">Sudah Dibayar</span>
                         {% else %}
                         <span class="badge bg-warning bg-opacity-10 text-warning badge-status">Belum Dibayar</span>
                         {% endif %}
                     </td>
-                    <td class="text-end">Rp {{ t.total_uang_masuk|intcomma }}</td>
-                    <td class="text-end">Rp {{ t.total_bersih|intcomma }}</td>
-                    <td>
+                    <td class="text-end" data-label="Uang Masuk">Rp {{ t.total_uang_masuk|floatformat:2|intcomma }}</td>
+                    <td class="text-end" data-label="Bersih">Rp {{ t.total_bersih|floatformat:2|intcomma }}</td>
+                    <td class="td-aksi">
                         <div class="btn-group btn-group-sm">
                             <a href="{% url 'finance:transaksi_report' t.pk %}" class="btn btn-outline-info"
                                 title="Laporan Lengkap">

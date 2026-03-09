@@ -203,6 +203,70 @@
         .sidebar-overlay.show {
             display: block;
         }
+
+        /* ── Stacked Table (Mobile) ─────────────── */
+        @media (max-width: 767.98px) {
+            .table-stack thead {
+                display: none;
+            }
+
+            .table-stack tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 0.75rem;
+                padding: 0.5rem 0;
+                background: #fff;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            }
+
+            .table-stack td {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.45rem 1rem;
+                border: none !important;
+                font-size: 0.85rem;
+                gap: 0.5rem;
+            }
+
+            .table-stack td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #94a3b8;
+                white-space: nowrap;
+                min-width: 90px;
+            }
+
+            .table-stack td.td-aksi {
+                justify-content: flex-end;
+                padding-top: 0.6rem;
+                border-top: 1px solid #f1f5f9 !important;
+                margin-top: 0.25rem;
+            }
+
+            .table-stack td.td-aksi::before {
+                display: none;
+            }
+
+            /* Sembunyikan nomor urut di mobile */
+            .table-stack td.td-no {
+                display: none;
+            }
+
+            .table-wrapper {
+                overflow: visible;
+                box-shadow: none;
+                background: transparent;
+            }
+
+            .table-wrapper .table-responsive {
+                overflow: visible;
+            }
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>

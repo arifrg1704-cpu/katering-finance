@@ -12,8 +12,8 @@
                 <label for="status" class="form-label text-muted small fw-bold text-uppercase">Status Transfer</label>
                 <select name="status" id="status" class="form-select border-0 bg-light" onchange="this.form.submit()">
                     <option value="">Semua Status</option>
-                    <option value="sudah" {% if status == 'sudah' %}selected{% endif %}>Sudah Transfer</option>
-                    <option value="belum" {% if status == 'belum' %}selected{% endif %}>Belum Transfer</option>
+                    <option value="sudah" {% if status=='sudah' %}selected{% endif %}>Sudah Transfer</option>
+                    <option value="belum" {% if status=='belum' %}selected{% endif %}>Belum Transfer</option>
                 </select>
             </div>
         </form>
@@ -35,7 +35,7 @@
             <h6 class="mb-0 fw-bold text-primary">Total: Rp {{ total_fee_pemilik|floor_number|intcomma }}</h6>
         </div>
         <div class="table-responsive">
-            <table class="table table-hover mb-0">
+            <table class="table table-hover mb-0 table-stack">
                 <thead>
                     <tr>
                         <th style="width: 40px;">
@@ -50,21 +50,21 @@
                 <tbody>
                     {% for item in fee_list %}
                     <tr>
-                        <td>
+                        <td class="td-no">
                             <input class="form-check-input detail-checkbox" type="checkbox" name="detail_ids"
                                 value="{{ item.id }}">
                         </td>
-                        <td>
+                        <td data-label="Tanggal">
                             <div class="fw-semibold">{{ item.transaksi.tanggal|date:"d M Y" }}</div>
                         </td>
-                        <td>
+                        <td data-label="Client">
                             <div class="fw-semibold">{{ item.transaksi.client.nama_client }}</div>
                             <div class="text-muted small">{{ item.transaksi.client.dinas.nama_dinas }}</div>
                         </td>
-                        <td class="text-end fw-medium text-success">
+                        <td class="text-end fw-medium text-success" data-label="Fee 20%">
                             Rp {{ item.fee_pemilik_20|floor_number|intcomma }}
                         </td>
-                        <td class="text-center">
+                        <td class="text-center" data-label="Status">
                             {% if item.fee_pemilik_sudah_ditransfer %}
                             <span class="badge bg-success bg-opacity-10 text-success badge-status">Sudah Transfer</span>
                             {% else %}
