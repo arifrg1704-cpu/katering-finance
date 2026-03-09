@@ -12,8 +12,8 @@
                 <label for="status" class="form-label text-muted small fw-bold text-uppercase">Status Transfer</label>
                 <select name="status" id="status" class="form-select border-0 bg-light" onchange="this.form.submit()">
                     <option value="">Semua Status</option>
-                    <option value="sudah" {% if status=='sudah' %}selected{% endif %}>Sudah Transfer</option>
-                    <option value="belum" {% if status=='belum' %}selected{% endif %}>Belum Transfer</option>
+                    <option value="sudah" {% if status == 'sudah' %}selected{% endif %}>Sudah Transfer</option>
+                    <option value="belum" {% if status == 'belum' %}selected{% endif %}>Belum Transfer</option>
                 </select>
             </div>
         </form>

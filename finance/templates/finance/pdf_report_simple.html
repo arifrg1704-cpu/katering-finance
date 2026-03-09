@@ -160,6 +160,18 @@
             {% endfor %}
         </tbody>
         <tfoot>
+            {% if transaksi.biaya_materai %}
+            <tr>
+                <td colspan="4" style="text-align:right; color:#888; font-style:italic;">Potongan Materai</td>
+                <td style="color:#c0392b;">- Rp {{ transaksi.biaya_materai|floor_number|intcomma }}</td>
+            </tr>
+            {% endif %}
+            {% if transaksi.biaya_tte %}
+            <tr>
+                <td colspan="4" style="text-align:right; color:#888; font-style:italic;">Potongan TTE</td>
+                <td style="color:#c0392b;">- Rp {{ transaksi.biaya_tte|floor_number|intcomma }}</td>
+            </tr>
+            {% endif %}
             <tr>
                 <td>TOTAL</td>
                 <td>Rp {{ transaksi.total_uang_masuk|floor_number|intcomma }}</td>

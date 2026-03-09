@@ -84,6 +84,16 @@
                         {% endfor %}
                     </tbody>
                     <tfoot>
+                        <tr class="table-light" id="row-materai" style="display:none">
+                            <td colspan="6" class="text-end text-muted">Potongan Materai</td>
+                            <td class="text-end text-danger" id="val-materai">0</td>
+                            <td></td>
+                        </tr>
+                        <tr class="table-light" id="row-tte" style="display:none">
+                            <td colspan="6" class="text-end text-muted">Potongan TTE</td>
+                            <td class="text-end text-danger" id="val-tte">0</td>
+                            <td></td>
+                        </tr>
                         <tr class="table-light fw-bold">
                             <td colspan="2">TOTAL</td>
                             <td class="text-end" id="total-pajak">0</td>
@@ -161,6 +171,31 @@
                 tFee20 += fee5 * 0.2;
                 tBersih += uang - fee5 - pajak;
             });
+
+            // Potongan Materai & TTE
+            const materaiInput = document.getElementById('id_biaya_materai');
+            const tteInput = document.getElementById('id_biaya_tte');
+            const materai = parseFloat(materaiInput?.value) || 0;
+            const tte = parseFloat(tteInput?.value) || 0;
+
+            // Show/hide potongan rows
+            const rowMaterai = document.getElementById('row-materai');
+            const rowTte = document.getElementById('row-tte');
+            if (materai > 0) {
+                rowMaterai.style.display = '';
+                document.getElementById('val-materai').textContent = '- ' + formatNumber(materai);
+            } else {
+                rowMaterai.style.display = 'none';
+            }
+            if (tte > 0) {
+                rowTte.style.display = '';
+                document.getElementById('val-tte').textContent = '- ' + formatNumber(tte);
+            } else {
+                rowTte.style.display = 'none';
+            }
+
+            tBersih -= materai + tte;
+
             document.getElementById('total-pajak').textContent = formatNumber(tPajak);
             document.getElementById('total-fee5').textContent = formatNumber(tFee5);
             document.getElementById('total-fee80').textContent = formatNumber(tFee80);
@@ -170,6 +205,12 @@
 
         // --- Event delegation ---
         detailBody.addEventListener('input', calcAll);
+
+        // --- Listen to Materai & TTE input changes ---
+        const materaiField = document.getElementById('id_biaya_materai');
+        const tteField = document.getElementById('id_biaya_tte');
+        if (materaiField) materaiField.addEventListener('input', calcAll);
+        if (tteField) tteField.addEventListener('input', calcAll);
 
         // --- Delete row ---
         detailBody.addEventListener('click', function (e) {

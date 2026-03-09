@@ -37,9 +37,23 @@ class ClientForm(BootstrapFormMixin, forms.ModelForm):
 class TransaksiForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Transaksi
-        fields = ['client', 'tanggal', 'status_transfer', 'catatan']
+        fields = ['client', 'tanggal', 'status_transfer', 'catatan', 'biaya_materai', 'biaya_tte']
         widgets = {
             'tanggal': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
+            'biaya_materai': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0',
+                'id': 'id_biaya_materai',
+            }),
+            'biaya_tte': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0',
+                'id': 'id_biaya_tte',
+            }),
         }
 
 

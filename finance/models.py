@@ -69,6 +69,14 @@ class Transaksi(models.Model):
     catatan = models.TextField(
         blank=True, default='', verbose_name="Catatan"
     )
+    biaya_materai = models.DecimalField(
+        max_digits=15, decimal_places=2, default=Decimal('0'),
+        blank=True, verbose_name="Biaya Materai",
+    )
+    biaya_tte = models.DecimalField(
+        max_digits=15, decimal_places=2, default=Decimal('0'),
+        blank=True, verbose_name="Biaya TTE",
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=2, verbose_name="Dibuat Oleh")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -111,14 +119,19 @@ class Transaksi(models.Model):
         )['total'] or Decimal('0')
 
     @property
+    def total_potongan(self):
+        return (self.biaya_materai or Decimal('0')) + (self.biaya_tte or Decimal('0'))
+
+    @property
     def total_bersih(self):
-        return self.details.aggregate(
+        subtotal = self.details.aggregate(
             total=models.Sum('bersih')
         )['total'] or Decimal('0')
+        return subtotal - self.total_potongan
 
     @property
     def total_bersih_alt(self):
-        return self.total_uang_masuk - self.total_fee_pemilik_20 - self.total_pajak
+        return self.total_uang_masuk - self.total_fee_pemilik_20 - self.total_pajak - self.total_potongan
 
 
 class TransaksiDetail(models.Model):
