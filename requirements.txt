@@ -1,2 +1,2 @@
 Django>=5.2,<5.3
-xhtml2pdf>=0.2.11
+pdfkit>=1.0.0

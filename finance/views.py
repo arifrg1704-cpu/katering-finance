@@ -325,9 +325,9 @@ def transaksi_report_simple(request, pk):
 def export_pdf(request, pk):
     """Export a single transaction report to PDF."""
     try:
-        from xhtml2pdf import pisa
+        import pdfkit
     except ImportError:
-        messages.error(request, 'xhtml2pdf belum diinstall. Jalankan: pip install xhtml2pdf')
+        messages.error(request, 'pdfkit belum diinstall. Jalankan: pip install pdfkit')
         return redirect('finance:transaksi_report', pk=pk)
 
     qs = Transaksi.objects.select_related('client', 'client__dinas')
@@ -342,20 +342,30 @@ def export_pdf(request, pk):
         'details': details,
     })
 
-    response = HttpResponse(content_type='application/pdf')
+    options = {
+        'page-size': 'A4',
+        'margin-top': '0.75in',
+        'margin-right': '0.75in',
+        'margin-bottom': '0.75in',
+        'margin-left': '0.75in',
+        'encoding': "UTF-8",
+    }
+    
+    pdf = pdfkit.from_string(html, False, options=options)
+
+    response = HttpResponse(pdf, content_type='application/pdf')
     filename = f"laporan_{transaksi.client.nama_client}_{transaksi.tanggal}.pdf"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
-    pisa.CreatePDF(html, dest=response)
     return response
 
 @login_required
 def export_pdf_simple(request, pk):
     """Export a simple single transaction report to PDF."""
     try:
-        from xhtml2pdf import pisa
+        import pdfkit
     except ImportError:
-        messages.error(request, 'xhtml2pdf belum diinstall. Jalankan: pip install xhtml2pdf')
+        messages.error(request, 'pdfkit belum diinstall. Jalankan: pip install pdfkit')
         return redirect('finance:transaksi_report_simple', pk=pk)
 
     qs = Transaksi.objects.select_related('client', 'client__dinas')
@@ -370,9 +380,19 @@ def export_pdf_simple(request, pk):
         'details': details,
     })
 
-    response = HttpResponse(content_type='application/pdf')
+    options = {
+        'page-size': 'A4',
+        'margin-top': '0.75in',
+        'margin-right': '0.75in',
+        'margin-bottom': '0.75in',
+        'margin-left': '0.75in',
+        'encoding': "UTF-8",
+    }
+    
+    pdf = pdfkit.from_string(html, False, options=options)
+
+    response = HttpResponse(pdf, content_type='application/pdf')
     filename = f"laporan_simple_{transaksi.client.nama_client}_{transaksi.tanggal}.pdf"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
-    pisa.CreatePDF(html, dest=response)
     return response
