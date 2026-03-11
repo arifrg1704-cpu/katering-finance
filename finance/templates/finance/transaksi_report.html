@@ -139,7 +139,6 @@
                     <th class="text-end">Fee 5%</th>
                     <th class="text-end">Fee Bersih (80%)</th>
                     <th class="text-end">Fee Pemilik (20%)</th>
-                    <th class="text-end">Pajak</th>
                     <th class="text-end">Bersih</th>
                 </tr>
             </thead>
@@ -151,12 +150,11 @@
                     <td class="text-end">Rp {{ d.fee_5_persen|floor_number|intcomma }}</td>
                     <td class="text-end">Rp {{ d.fee_bersih_80|floor_number|intcomma }}</td>
                     <td class="text-end">Rp {{ d.fee_pemilik_20|floor_number|intcomma }}</td>
-                    <td class="text-end">Rp {{ d.pajak|floor_number|intcomma }}</td>
                     <td class="text-end">Rp {{ d.bersih_alt|floor_number|intcomma }}</td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="text-center text-muted py-4">Tidak ada detail transaksi.</td>
+                    <td colspan="6" class="text-center text-muted py-4">Tidak ada detail transaksi.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -164,13 +162,13 @@
             <tfoot>
                 {% if transaksi.biaya_materai %}
                 <tr class="table-light">
-                    <td colspan="6" class="text-end text-muted">Potongan Materai</td>
+                    <td colspan="5" class="text-end text-muted">Potongan Materai</td>
                     <td class="text-end text-danger">- Rp {{ transaksi.biaya_materai|floor_number|intcomma }}</td>
                 </tr>
                 {% endif %}
                 {% if transaksi.biaya_tte %}
                 <tr class="table-light">
-                    <td colspan="6" class="text-end text-muted">Potongan TTE</td>
+                    <td colspan="5" class="text-end text-muted">Potongan TTE</td>
                     <td class="text-end text-danger">- Rp {{ transaksi.biaya_tte|floor_number|intcomma }}</td>
                 </tr>
                 {% endif %}
@@ -180,7 +178,6 @@
                     <td class="text-end">Rp {{ transaksi.total_fee_5_persen|floor_number|intcomma }}</td>
                     <td class="text-end">Rp {{ transaksi.total_fee_bersih_80|floor_number|intcomma }}</td>
                     <td class="text-end">Rp {{ transaksi.total_fee_pemilik_20|floor_number|intcomma }}</td>
-                    <td class="text-end">Rp {{ transaksi.total_pajak|floor_number|intcomma }}</td>
                     <td class="text-end">Rp {{ transaksi.total_bersih_alt|floor_number|intcomma }}</td>
                 </tr>
             </tfoot>
