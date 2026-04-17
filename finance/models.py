@@ -46,6 +46,32 @@ class Client(models.Model):
         return f"{self.nama_client} ({self.dinas.nama_dinas})"
 
 
+class Pesanan(models.Model):
+    """Model untuk Pesanan."""
+    nomor_surat_pesanan = models.CharField(max_length=255, verbose_name="Nomor Surat Pesanan")
+    tanggal_surat_pesanan = models.DateField(verbose_name="Tanggal Surat Pesanan")
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        related_name='pesanan_list',
+        verbose_name="Client (FK Client)",
+    )
+    nilai_pesanan = models.DecimalField(
+        max_digits=15, decimal_places=2, default=Decimal('0'),
+        verbose_name="Nilai Pesanan (Rp)",
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=2, verbose_name="Dibuat Oleh")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Pesanan"
+        verbose_name_plural = "Pesanan"
+        ordering = ['-tanggal_surat_pesanan']
+
+    def __str__(self):
+        return f"{self.nomor_surat_pesanan} - {self.client.nama_client}"
+
+
 class Transaksi(models.Model):
     """Model header transaksi keuangan."""
     STATUS_CHOICES = [

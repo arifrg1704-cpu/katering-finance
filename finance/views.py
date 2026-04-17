@@ -6,9 +6,9 @@ from django.http import HttpResponse
 from django.template.loader import get_template
 from decimal import Decimal
 
-from .models import Dinas, Client, Transaksi, TransaksiDetail
+from .models import Dinas, Client, Transaksi, TransaksiDetail, Pesanan
 from .forms import (
-    DinasForm, ClientForm, TransaksiForm, TransaksiDetailFormSet,
+    DinasForm, ClientForm, TransaksiForm, TransaksiDetailFormSet, PesananForm
 )
 
 
@@ -155,6 +155,69 @@ def client_delete(request, pk):
         messages.success(request, 'Client berhasil dihapus.')
         return redirect('finance:client_list')
     return render(request, 'finance/client_confirm_delete.html', {'object': client})
+
+
+# ─── Pesanan CRUD ───────────────────────────────────────────────────────────────
+
+@login_required
+def pesanan_list(request):
+    if request.user.is_superuser:
+        queryset = Pesanan.objects.select_related('client', 'client__dinas').all()
+    else:
+        queryset = Pesanan.objects.select_related('client', 'client__dinas').filter(user=request.user)
+        
+    q = request.GET.get('q', '')
+    if q:
+        queryset = queryset.filter(
+            Q(nomor_surat_pesanan__icontains=q) |
+            Q(client__nama_client__icontains=q) |
+            Q(client__dinas__nama_dinas__icontains=q)
+        )
+    return render(request, 'finance/pesanan_list.html', {
+        'pesanan_list': queryset,
+        'q': q,
+    })
+
+
+@login_required
+def pesanan_create(request):
+    form = PesananForm(request.POST or None)
+    if not request.user.is_superuser:
+        form.fields['client'].queryset = Client.objects.filter(user=request.user)
+        
+    if form.is_valid():
+        pesanan = form.save(commit=False)
+        pesanan.user = request.user
+        pesanan.save()
+        messages.success(request, 'Pesanan berhasil ditambahkan.')
+        return redirect('finance:pesanan_list')
+    return render(request, 'finance/pesanan_form.html', {'form': form, 'title': 'Tambah Pesanan'})
+
+
+@login_required
+def pesanan_update(request, pk):
+    qs = Pesanan.objects.all() if request.user.is_superuser else Pesanan.objects.filter(user=request.user)
+    pesanan = get_object_or_404(qs, pk=pk)
+    form = PesananForm(request.POST or None, instance=pesanan)
+    if not request.user.is_superuser:
+        form.fields['client'].queryset = Client.objects.filter(user=request.user)
+        
+    if form.is_valid():
+        form.save()
+        messages.success(request, 'Pesanan berhasil diperbarui.')
+        return redirect('finance:pesanan_list')
+    return render(request, 'finance/pesanan_form.html', {'form': form, 'title': 'Edit Pesanan'})
+
+
+@login_required
+def pesanan_delete(request, pk):
+    qs = Pesanan.objects.all() if request.user.is_superuser else Pesanan.objects.filter(user=request.user)
+    pesanan = get_object_or_404(qs, pk=pk)
+    if request.method == 'POST':
+        pesanan.delete()
+        messages.success(request, 'Pesanan berhasil dihapus.')
+        return redirect('finance:pesanan_list')
+    return render(request, 'finance/pesanan_confirm_delete.html', {'object': pesanan})
 
 
 # ─── Transaksi CRUD ───────────────────────────────────────────────────────────

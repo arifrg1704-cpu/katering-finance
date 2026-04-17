@@ -19,6 +19,12 @@ urlpatterns = [
     path('client/<int:pk>/edit/', views.client_update, name='client_update'),
     path('client/<int:pk>/hapus/', views.client_delete, name='client_delete'),
 
+    # Pesanan
+    path('pesanan/', views.pesanan_list, name='pesanan_list'),
+    path('pesanan/tambah/', views.pesanan_create, name='pesanan_create'),
+    path('pesanan/<int:pk>/edit/', views.pesanan_update, name='pesanan_update'),
+    path('pesanan/<int:pk>/hapus/', views.pesanan_delete, name='pesanan_delete'),
+
     # Transaksi
     path('transaksi/', views.transaksi_list, name='transaksi_list'),
     path('fee-pemilik/', views.fee_pemilik_list, name='fee_pemilik_list'),

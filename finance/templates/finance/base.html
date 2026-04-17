@@ -297,6 +297,9 @@
                 class="nav-link {% if 'client' in request.path %}active{% endif %}">
                 <i class="bi bi-people-fill"></i> Client
             </a>
+            <a href="{% url 'finance:pesanan_list' %}" class="nav-link {% if 'pesanan' in request.path %}active{% endif %}">
+                <i class="bi bi-cart"></i> Pesanan
+            </a>
         </div>
         <div class="nav-section">
             <div class="nav-section-title">Keuangan</div>

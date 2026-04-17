@@ -1,0 +1,64 @@
+{% extends "finance/base.html" %}
+{% load humanize %}
+
+{% block title %}Daftar Pesanan{% endblock %}
+{% block page_title %}Daftar Pesanan{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <form class="d-flex gap-2" method="get">
+        <input type="text" name="q" class="form-control form-control-sm" placeholder="Cari pesanan..." value="{{ q }}">
+        <button class="btn btn-sm btn-outline-primary"><i class="bi bi-search"></i></button>
+    </form>
+    <a href="{% url 'finance:pesanan_create' %}" class="btn btn-sm btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Tambah Pesanan
+    </a>
+</div>
+
+<div class="table-wrapper">
+    <div class="table-responsive">
+        <table class="table table-hover table-stack">
+            <thead>
+                <tr>
+                    <th style="width:40px">No</th>
+                    <th>No. Surat Pesanan</th>
+                    <th>Tanggal</th>
+                    <th>Client</th>
+                    <th>Nilai Pesanan (Rp)</th>
+                    <th style="width:120px">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pesanan_list %}
+                <tr>
+                    <td class="td-no">{{ forloop.counter }}</td>
+                    <td class="fw-medium" data-label="No. Surat">{{ p.nomor_surat_pesanan }}</td>
+                    <td data-label="Tanggal">{{ p.tanggal_surat_pesanan|date:"d M Y" }}</td>
+                    <td data-label="Client">
+                        {{ p.client.nama_client }}<br>
+                        <small class="text-muted">{{ p.client.dinas.nama_dinas }}</small>
+                    </td>
+                    <td data-label="Nilai (Rp)">Rp {{ p.nilai_pesanan|floatformat:0|intcomma }}</td>
+                    <td class="td-aksi">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'finance:pesanan_update' p.pk %}" class="btn btn-outline-primary"
+                                title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'finance:pesanan_delete' p.pk %}" class="btn btn-outline-danger"
+                                title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Belum ada data pesanan.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
