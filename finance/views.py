@@ -584,11 +584,15 @@ def export_penjualan_pdf(request, pk):
     penjualan = get_object_or_404(qs, pk=pk)
     details = penjualan.details.all()
 
+    from django.conf import settings
+    logo_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'logo_zahara.png')
+    
     template = get_template('finance/penjualan_pdf.html')
     html = template.render({
         'penjualan': penjualan,
         'details': details,
         'request': request,
+        'logo_path': logo_path,
     })
 
     options = {
@@ -598,14 +602,13 @@ def export_penjualan_pdf(request, pk):
         'margin-bottom': '0.75in',
         'margin-left': '0.75in',
         'encoding': "UTF-8",
-        'enable-local-file-access': "",
     }
     
     try:
         pdf = pdfkit.from_string(html, False, options=options, configuration=get_pdfkit_config())
     except Exception as e:
         print(f"PDFKIT EXCEPTION: {e}")
-        messages.error(request, f'Gagal membuat PDF. Pastikan wkhtmltopdf sudah diinstall. Error detail: {str(e)}')
+        messages.error(request, f'Gagal membuat PDF. Error detail: {str(e)}')
         return redirect('finance:penjualan_list')
 
     response = HttpResponse(pdf, content_type='application/pdf')
