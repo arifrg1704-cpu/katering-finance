@@ -588,11 +588,25 @@ def export_penjualan_pdf(request, pk):
     # Convert logo to base64 for compatibility
     import base64
     from django.conf import settings
-    logo_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'logo_zahara.png')
+    
+    # Try multiple possible paths for the logo
+    possible_paths = [
+        os.path.join(settings.BASE_DIR, 'static', 'images', 'logo_zahara.png'),
+        os.path.join(settings.BASE_DIR, 'finance', 'static', 'finance', 'images', 'logo_zahara.png'),
+    ]
+    
     logo_base64 = ""
-    if os.path.exists(logo_path):
-        with open(logo_path, "rb") as image_file:
+    found_path = None
+    for path in possible_paths:
+        if os.path.exists(path):
+            found_path = path
+            break
+            
+    if found_path:
+        with open(found_path, "rb") as image_file:
             logo_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+    else:
+        print(f"DEBUG: Logo not found in any of: {possible_paths}")
     
     template = get_template('finance/penjualan_pdf.html')
     html = template.render({
