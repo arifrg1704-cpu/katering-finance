@@ -5,6 +5,7 @@ from django.db.models import Sum, Q
 from django.http import HttpResponse
 from django.template.loader import get_template
 from decimal import Decimal
+import os
 
 from .models import Dinas, Client, Transaksi, TransaksiDetail, Pesanan, Penjualan, PenjualanDetail
 from .forms import (
