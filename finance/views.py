@@ -588,25 +588,24 @@ def export_penjualan_pdf(request, pk):
     # Convert logo to base64 for compatibility
     import base64
     from django.conf import settings
+    from django.contrib.staticfiles import finders
     
-    # Try multiple possible paths for the logo
-    possible_paths = [
-        os.path.join(settings.BASE_DIR, 'static', 'images', 'logo_zahara.png'),
-        os.path.join(settings.BASE_DIR, 'finance', 'static', 'finance', 'images', 'logo_zahara.png'),
-    ]
+    # Use finders to locate the static file reliably across environments
+    found_path = finders.find('images/logo_zahara.png')
     
     logo_base64 = ""
-    found_path = None
-    for path in possible_paths:
-        if os.path.exists(path):
-            found_path = path
-            break
-            
-    if found_path:
+    if found_path and os.path.exists(found_path):
         with open(found_path, "rb") as image_file:
             logo_base64 = base64.b64encode(image_file.read()).decode('utf-8')
     else:
-        print(f"DEBUG: Logo not found in any of: {possible_paths}")
+        # Fallback to manual path if finders fail (common in production if collectstatic was run)
+        manual_path = os.path.join(settings.STATIC_ROOT or "", 'images', 'logo_zahara.png')
+        if os.path.exists(manual_path):
+            with open(manual_path, "rb") as image_file:
+                logo_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+    
+    if not logo_base64:
+        print(f"DEBUG: Logo not found. Finders returned: {found_path}")
     
     template = get_template('finance/penjualan_pdf.html')
     html = template.render({
