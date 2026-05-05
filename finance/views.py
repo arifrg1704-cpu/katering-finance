@@ -585,15 +585,21 @@ def export_penjualan_pdf(request, pk):
     penjualan = get_object_or_404(qs, pk=pk)
     details = penjualan.details.all()
 
+    # Convert logo to base64 for compatibility
+    import base64
     from django.conf import settings
     logo_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'logo_zahara.png')
+    logo_base64 = ""
+    if os.path.exists(logo_path):
+        with open(logo_path, "rb") as image_file:
+            logo_base64 = base64.b64encode(image_file.read()).decode('utf-8')
     
     template = get_template('finance/penjualan_pdf.html')
     html = template.render({
         'penjualan': penjualan,
         'details': details,
         'request': request,
-        'logo_path': logo_path,
+        'logo_base64': logo_base64,
     })
 
     options = {

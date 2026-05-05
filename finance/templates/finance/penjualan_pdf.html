@@ -153,7 +153,9 @@
         <div class="header-left">
             <div style="display: table;">
                 <div class="logo-container">
-                    <img src="{{ logo_path }}" alt="Logo">
+                    {% if logo_base64 %}
+                    <img src="data:image/png;base64,{{ logo_base64 }}" alt="Logo">
+                    {% endif %}
                 </div>
                 <div class="company-info">
                     <div class="company-name">Zahara</div>
