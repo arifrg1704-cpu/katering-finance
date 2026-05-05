@@ -1,0 +1,125 @@
+{% extends 'finance/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+            
+            <h6 class="mb-3 fw-bold text-primary border-bottom pb-2">Informasi Penjualan (Nota)</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Tuan / Toko (Dinas)</label>
+                    {{ form.dinas }}
+                    {{ form.dinas.errors }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Tanggal</label>
+                    {{ form.tanggal }}
+                    {{ form.tanggal.errors }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">No Nota</label>
+                    {{ form.no_nota }}
+                    {{ form.no_nota.errors }}
+                </div>
+            </div>
+
+            <h6 class="mb-3 fw-bold text-primary border-bottom pb-2">Detail Barang</h6>
+            {{ formset.management_form }}
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm align-middle" id="detail_table">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="10%">QTY</th>
+                            <th>Nama Barang</th>
+                            <th width="25%">Satuan (Harga)</th>
+                            <th width="5%" class="text-center"><i class="bi bi-trash"></i></th>
+                        </tr>
+                    </thead>
+                    <tbody id="formset-container">
+                        {% for detail_form in formset %}
+                        <tr class="formset-row">
+                            {% for hidden in detail_form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+                            <td>{{ detail_form.qty }}</td>
+                            <td>{{ detail_form.nama_barang }}</td>
+                            <td>{{ detail_form.satuan }}</td>
+                            <td class="text-center align-middle">
+                                {% if detail_form.instance.pk %}
+                                    {{ detail_form.DELETE }}
+                                {% else %}
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="bi bi-x-lg"></i></button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mb-4">
+                <button type="button" id="add-row" class="btn btn-sm btn-secondary">
+                    <i class="bi bi-plus-circle me-1"></i>Tambah Baris
+                </button>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                <a href="{% url 'finance:penjualan_list' %}" class="btn btn-light px-4">Batal</a>
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-save me-1"></i>Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Template baris kosong untuk formset -->
+<div id="empty-form" style="display:none;">
+    <tr class="formset-row">
+        {% for hidden in formset.empty_form.hidden_fields %}
+            {{ hidden }}
+        {% endfor %}
+        <td>{{ formset.empty_form.qty }}</td>
+        <td>{{ formset.empty_form.nama_barang }}</td>
+        <td>{{ formset.empty_form.satuan }}</td>
+        <td class="text-center align-middle">
+            <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="bi bi-x-lg"></i></button>
+        </td>
+    </tr>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addBtn = document.getElementById('add-row');
+    const container = document.getElementById('formset-container');
+    const emptyFormHtml = document.getElementById('empty-form').innerHTML;
+    const totalForms = document.getElementById('id_details-TOTAL_FORMS');
+
+    addBtn.addEventListener('click', function() {
+        const formCount = parseInt(totalForms.value);
+        let newFormHtml = emptyFormHtml.replace(/__prefix__/g, formCount);
+        
+        container.insertAdjacentHTML('beforeend', newFormHtml);
+        totalForms.value = formCount + 1;
+    });
+
+    container.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-row') || e.target.closest('.remove-row')) {
+            e.preventDefault();
+            const row = e.target.closest('tr');
+            row.remove();
+            
+            // Re-index is not strictly required if we only add sequentially, 
+            // but for safety let's leave it as is. Django handles missing indexes if not deleted from DB.
+        }
+    });
+});
+</script>
+{% endblock %}

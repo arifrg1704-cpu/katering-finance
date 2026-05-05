@@ -1,0 +1,249 @@
+{% load humanize finance_tags %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Nota Penjualan - {{ penjualan.no_nota }}</title>
+    <style>
+        @page {
+            size: A5 landscape;
+            margin: 1cm;
+        }
+
+        * {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-size: 14px;
+            color: #000;
+            padding: 10px;
+        }
+
+        .header {
+            display: table;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .header-left {
+            display: table-cell;
+            width: 60%;
+            vertical-align: top;
+        }
+
+        .header-right {
+            display: table-cell;
+            width: 40%;
+            vertical-align: top;
+            font-size: 13px;
+        }
+
+        .logo-container {
+            display: table-cell;
+            vertical-align: top;
+            padding-right: 10px;
+        }
+
+        .logo-container img {
+            width: 60px;
+            height: auto;
+            border-radius: 50%;
+        }
+
+        .company-info {
+            display: table-cell;
+            vertical-align: top;
+        }
+
+        .company-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .company-contact {
+            font-size: 11px;
+            line-height: 1.2;
+        }
+
+        .nota-no-container {
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .nota-no {
+            color: #e74c3c;
+            font-size: 18px;
+        }
+
+        .customer-info table {
+            width: 100%;
+        }
+
+        .customer-info td {
+            padding: 2px;
+        }
+
+        .customer-info td.border-bottom {
+            border-bottom: 1px dotted #000;
+        }
+
+        table.items {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            border-top: 2px solid #000;
+            border-bottom: 2px solid #000;
+        }
+
+        table.items th, table.items td {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+        }
+
+        table.items th {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        table.items td:nth-child(2) {
+            text-align: left;
+        }
+
+        table.items td:nth-child(3), table.items td:nth-child(4) {
+            text-align: right;
+        }
+
+        .total-row td {
+            font-weight: bold;
+        }
+
+        .footer {
+            display: table;
+            width: 100%;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .footer-cell {
+            display: table-cell;
+            width: 33.33%;
+            vertical-align: bottom;
+        }
+
+        .signature-line {
+            display: inline-block;
+            border-bottom: 1px solid #000;
+            width: 100px;
+            margin-top: 40px;
+        }
+        
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <div style="display: table;">
+                <div class="logo-container">
+                    <!-- Menggunakan absolute HTTP url agar pdfkit bisa mendownload gambar dari server -->
+                    <img src="{{ request.scheme }}://{{ request.get_host }}/static/images/logo_zahara.png" alt="Logo">
+                </div>
+                <div class="company-info">
+                    <div class="company-name">Zahara</div>
+                    <div class="company-contact">
+                        Jl. Ujung Pandang Komp Janur Asri No. B23<br>
+                        Kota Pontianak
+                    </div>
+                </div>
+            </div>
+            <div class="nota-no-container">
+                NO. <span class="nota-no">{{ penjualan.no_nota }}</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div style="text-align: right; margin-bottom: 5px;">
+                Pontianak, <span>{{ penjualan.tanggal|date:"d F Y" }}</span>
+            </div>
+            <div style="text-align: center; margin-bottom: 5px;">
+                KEPADA YTH.
+            </div>
+            <div class="customer-info">
+                <table>
+                    <tr>
+                        <td width="30%">TUAN / TOKO</td>
+                        <td style="color: #000; font-weight: bold; font-family: 'Courier New', Courier, monospace;">{{ penjualan.dinas.nama_dinas }}</td>
+                    </tr>
+                    <tr>
+                        <td>di</td>
+                        <td style="color: #000; font-weight: bold; font-family: 'Courier New', Courier, monospace;">Pontianak</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <table class="items">
+        <thead>
+            <tr>
+                <th width="10%">QTY</th>
+                <th width="45%">NAMA BARANG</th>
+                <th width="20%">SATUAN</th>
+                <th width="25%">JUMLAH</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in details %}
+            <tr>
+                <td>{{ d.qty }}</td>
+                <td style="color: #000; font-family: 'Courier New', Courier, monospace;">{{ d.nama_barang }}</td>
+                <td style="color: #000; font-family: 'Courier New', Courier, monospace;">{{ d.satuan|floatformat:0|intcomma }}</td>
+                <td style="color: #000; font-family: 'Courier New', Courier, monospace;">{{ d.jumlah|floatformat:0|intcomma }}</td>
+            </tr>
+            {% endfor %}
+            <!-- Pad with empty rows to make it look like a receipt pad -->
+            {% if details|length < 5 %}
+                {% for i in "12345" %}
+                    {% if forloop.counter > details|length %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="2" style="border: none;"></td>
+                <td style="text-align: right; font-weight: bold;">TOTAL Rp.</td>
+                <td style="color: #000; font-family: 'Courier New', Courier, monospace; text-align: right;">{{ penjualan.total_jumlah|floatformat:0|intcomma }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="footer">
+        <div class="footer-cell">
+            <div>PENERIMA,</div>
+            <div style="margin-top: 30px; color: #000; font-family: cursive; font-size: 24px;"></div>
+        </div>
+        <div class="footer-cell">
+            <!-- Stempel dihapus -->
+        </div>
+        <div class="footer-cell">
+            <div>HORMAT KAMI,</div>
+            <div style="margin-top: 40px; width: 80%; margin-left: 10%;"></div>
+        </div>
+    </div>
+
+</body>
+</html>

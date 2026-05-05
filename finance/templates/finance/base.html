@@ -307,6 +307,10 @@
                 class="nav-link {% if 'transaksi' in request.path %}active{% endif %}">
                 <i class="bi bi-receipt-cutoff"></i> Transaksi
             </a>
+            <a href="{% url 'finance:penjualan_list' %}"
+                class="nav-link {% if 'penjualan' in request.path %}active{% endif %}">
+                <i class="bi bi-shop"></i> Penjualan (Nota)
+            </a>
             <a href="{% url 'finance:fee_pemilik_list' %}"
                 class="nav-link {% if 'fee-pemilik' in request.path %}active{% endif %}">
                 <i class="bi bi-cash-stack"></i> Fee Pemilik

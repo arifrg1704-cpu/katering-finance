@@ -25,6 +25,13 @@ urlpatterns = [
     path('pesanan/<int:pk>/edit/', views.pesanan_update, name='pesanan_update'),
     path('pesanan/<int:pk>/hapus/', views.pesanan_delete, name='pesanan_delete'),
 
+    # Penjualan
+    path('penjualan/', views.penjualan_list, name='penjualan_list'),
+    path('penjualan/tambah/', views.penjualan_create, name='penjualan_create'),
+    path('penjualan/<int:pk>/edit/', views.penjualan_update, name='penjualan_update'),
+    path('penjualan/<int:pk>/hapus/', views.penjualan_delete, name='penjualan_delete'),
+    path('penjualan/<int:pk>/export-pdf/', views.export_penjualan_pdf, name='export_penjualan_pdf'),
+
     # Transaksi
     path('transaksi/', views.transaksi_list, name='transaksi_list'),
     path('fee-pemilik/', views.fee_pemilik_list, name='fee_pemilik_list'),

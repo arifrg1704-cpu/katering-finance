@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Dinas, Client, Transaksi, TransaksiDetail, Pesanan
+from .models import Dinas, Client, Transaksi, TransaksiDetail, Pesanan, Penjualan, PenjualanDetail
 
 
 class BootstrapFormMixin:
@@ -93,6 +93,34 @@ TransaksiDetailFormSet = inlineformset_factory(
     Transaksi,
     TransaksiDetail,
     form=TransaksiDetailForm,
+    extra=1,
+    can_delete=True,
+)
+
+
+class PenjualanForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = Penjualan
+        fields = ['dinas', 'tanggal', 'no_nota']
+        widgets = {
+            'tanggal': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
+        }
+
+
+class PenjualanDetailForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = PenjualanDetail
+        fields = ['qty', 'nama_barang', 'satuan']
+        widgets = {
+            'qty': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'satuan': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
+        }
+
+
+PenjualanDetailFormSet = inlineformset_factory(
+    Penjualan,
+    PenjualanDetail,
+    form=PenjualanDetailForm,
     extra=1,
     can_delete=True,
 )

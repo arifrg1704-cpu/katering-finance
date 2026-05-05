@@ -1,0 +1,73 @@
+{% extends 'finance/base.html' %}
+{% load humanize %}
+
+{% block title %}Daftar Penjualan{% endblock %}
+{% block page_title %}Daftar Penjualan (Nota){% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <form class="d-flex gap-2 flex-grow-1 flex-md-grow-0" style="max-width: 400px;">
+        <input type="text" name="q" class="form-control" placeholder="Cari No Nota atau Dinas..." value="{{ q }}">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+    </form>
+    <a href="{% url 'finance:penjualan_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Tambah Penjualan
+    </a>
+</div>
+
+<div class="table-wrapper">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle table-stack">
+            <thead>
+                <tr>
+                    <th width="5%" class="text-center">No</th>
+                    <th>Tanggal</th>
+                    <th>No Nota</th>
+                    <th>Tuan / Toko (Dinas)</th>
+                    <th>Total</th>
+                    <th width="20%" class="text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in penjualan_list %}
+                <tr>
+                    <td class="text-center td-no" data-label="No">{{ forloop.counter }}</td>
+                    <td data-label="Tanggal">
+                        <span class="fw-medium">{{ item.tanggal|date:"d M Y" }}</span>
+                    </td>
+                    <td data-label="No Nota">
+                        {{ item.no_nota }}
+                    </td>
+                    <td data-label="Dinas">
+                        <div class="fw-semibold text-primary">{{ item.dinas.nama_dinas }}</div>
+                    </td>
+                    <td data-label="Total">
+                        Rp {{ item.total_jumlah|floatformat:0|intcomma }}
+                    </td>
+                    <td class="text-center td-aksi">
+                        <div class="btn-group">
+                            <a href="{% url 'finance:export_penjualan_pdf' item.pk %}" class="btn btn-sm btn-success" title="Cetak Nota (PDF)">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                            </a>
+                            <a href="{% url 'finance:penjualan_update' item.pk %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'finance:penjualan_delete' item.pk %}" class="btn btn-sm btn-outline-danger" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                        Belum ada data penjualan
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

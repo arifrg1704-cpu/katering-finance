@@ -217,3 +217,63 @@ class TransaksiDetail(models.Model):
         self.fee_pemilik_20 = self.fee_5_persen * Decimal('0.2')
         self.bersih = self.uang_masuk - self.fee_5_persen - self.pajak
         super().save(*args, **kwargs)
+
+
+class Penjualan(models.Model):
+    """Model header penjualan."""
+    dinas = models.ForeignKey(
+        Dinas,
+        on_delete=models.CASCADE,
+        related_name='penjualan_list',
+        verbose_name="Tuan / Toko (Dinas)",
+    )
+    tanggal = models.DateField(verbose_name="Tanggal")
+    no_nota = models.CharField(max_length=50, verbose_name="No. Nota")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=2, verbose_name="Dibuat Oleh")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Penjualan"
+        verbose_name_plural = "Penjualan"
+        ordering = ['-tanggal', '-no_nota']
+
+    def __str__(self):
+        return f"Nota {self.no_nota} - {self.dinas.nama_dinas}"
+
+    @property
+    def total_jumlah(self):
+        return self.details.aggregate(
+            total=models.Sum('jumlah')
+        )['total'] or Decimal('0')
+
+
+class PenjualanDetail(models.Model):
+    """Model detail penjualan."""
+    penjualan = models.ForeignKey(
+        Penjualan,
+        on_delete=models.CASCADE,
+        related_name='details',
+        verbose_name="Penjualan",
+    )
+    qty = models.IntegerField(verbose_name="QTY", default=1)
+    nama_barang = models.CharField(max_length=255, verbose_name="Nama Barang")
+    satuan = models.DecimalField(
+        max_digits=15, decimal_places=2, default=Decimal('0'),
+        verbose_name="Satuan (Harga)",
+    )
+    jumlah = models.DecimalField(
+        max_digits=15, decimal_places=2, default=Decimal('0'),
+        verbose_name="Jumlah", editable=False,
+    )
+
+    class Meta:
+        verbose_name = "Detail Penjualan"
+        verbose_name_plural = "Detail Penjualan"
+
+    def __str__(self):
+        return f"{self.nama_barang} - {self.qty}"
+
+    def save(self, *args, **kwargs):
+        self.jumlah = Decimal(self.qty) * self.satuan
+        super().save(*args, **kwargs)
+

@@ -6,13 +6,31 @@ from django.http import HttpResponse
 from django.template.loader import get_template
 from decimal import Decimal
 
-from .models import Dinas, Client, Transaksi, TransaksiDetail, Pesanan
+from .models import Dinas, Client, Transaksi, TransaksiDetail, Pesanan, Penjualan, PenjualanDetail
 from .forms import (
-    DinasForm, ClientForm, TransaksiForm, TransaksiDetailFormSet, PesananForm
+    DinasForm, ClientForm, TransaksiForm, TransaksiDetailFormSet, PesananForm,
+    PenjualanForm, PenjualanDetailFormSet
 )
 
 
 # ─── Dashboard ────────────────────────────────────────────────────────────────
+
+def get_pdfkit_config():
+    """Helper to get pdfkit configuration for Windows/Linux."""
+    import platform
+    import os
+    import pdfkit
+    
+    config = None
+    if platform.system() == 'Windows':
+        path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+        if not os.path.exists(path_wkhtmltopdf):
+            path_wkhtmltopdf = r'C:\Program Files (x86)\wkhtmltopdf\bin\wkhtmltopdf.exe'
+            
+        if os.path.exists(path_wkhtmltopdf):
+            config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+    return config
+
 
 @login_required
 def dashboard(request):
@@ -220,6 +238,98 @@ def pesanan_delete(request, pk):
     return render(request, 'finance/pesanan_confirm_delete.html', {'object': pesanan})
 
 
+# ─── Penjualan CRUD ───────────────────────────────────────────────────────────────
+
+@login_required
+def penjualan_list(request):
+    if request.user.is_superuser:
+        queryset = Penjualan.objects.select_related('dinas').all()
+    else:
+        queryset = Penjualan.objects.select_related('dinas').filter(user=request.user)
+        
+    q = request.GET.get('q', '')
+    if q:
+        queryset = queryset.filter(
+            Q(no_nota__icontains=q) |
+            Q(dinas__nama_dinas__icontains=q)
+        )
+    return render(request, 'finance/penjualan_list.html', {
+        'penjualan_list': queryset,
+        'q': q,
+    })
+
+
+@login_required
+def penjualan_create(request):
+    # Dynamically create formset with extra=2 for initial data
+    from django.forms import inlineformset_factory
+    from .models import Penjualan, PenjualanDetail
+    from .forms import PenjualanDetailForm
+    
+    CreateFormSet = inlineformset_factory(
+        Penjualan, PenjualanDetail, form=PenjualanDetailForm, extra=2, can_delete=True
+    )
+    
+    if request.method == 'POST':
+        form = PenjualanForm(request.POST)
+        formset = CreateFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            penjualan = form.save(commit=False)
+            penjualan.user = request.user
+            penjualan.save()
+            formset.instance = penjualan
+            formset.save()
+            messages.success(request, 'Penjualan berhasil ditambahkan.')
+            return redirect('finance:penjualan_list')
+    else:
+        form = PenjualanForm()
+        initial_data = [
+            {'nama_barang': 'Nasi Kotak', 'satuan': 30000, 'qty': 1},
+            {'nama_barang': 'Kue Kotak', 'satuan': 15000, 'qty': 1},
+        ]
+        formset = CreateFormSet(initial=initial_data)
+        
+    return render(request, 'finance/penjualan_form.html', {
+        'form': form,
+        'formset': formset,
+        'title': 'Tambah Penjualan',
+    })
+
+
+@login_required
+def penjualan_update(request, pk):
+    qs = Penjualan.objects.all() if request.user.is_superuser else Penjualan.objects.filter(user=request.user)
+    penjualan = get_object_or_404(qs, pk=pk)
+    if request.method == 'POST':
+        form = PenjualanForm(request.POST, instance=penjualan)
+        formset = PenjualanDetailFormSet(request.POST, instance=penjualan)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            messages.success(request, 'Penjualan berhasil diperbarui.')
+            return redirect('finance:penjualan_list')
+    else:
+        form = PenjualanForm(instance=penjualan)
+        formset = PenjualanDetailFormSet(instance=penjualan)
+        
+    return render(request, 'finance/penjualan_form.html', {
+        'form': form,
+        'formset': formset,
+        'title': 'Edit Penjualan',
+    })
+
+
+@login_required
+def penjualan_delete(request, pk):
+    qs = Penjualan.objects.all() if request.user.is_superuser else Penjualan.objects.filter(user=request.user)
+    penjualan = get_object_or_404(qs, pk=pk)
+    if request.method == 'POST':
+        penjualan.delete()
+        messages.success(request, 'Penjualan berhasil dihapus.')
+        return redirect('finance:penjualan_list')
+    return render(request, 'finance/penjualan_confirm_delete.html', {'object': penjualan})
+
+
 # ─── Transaksi CRUD ───────────────────────────────────────────────────────────
 
 @login_required
@@ -414,7 +524,7 @@ def export_pdf(request, pk):
         'encoding': "UTF-8",
     }
     
-    pdf = pdfkit.from_string(html, False, options=options)
+    pdf = pdfkit.from_string(html, False, options=options, configuration=get_pdfkit_config())
 
     response = HttpResponse(pdf, content_type='application/pdf')
     filename = f"laporan_{transaksi.client.nama_client}_{transaksi.tanggal}.pdf"
@@ -452,10 +562,55 @@ def export_pdf_simple(request, pk):
         'encoding': "UTF-8",
     }
     
-    pdf = pdfkit.from_string(html, False, options=options)
+    pdf = pdfkit.from_string(html, False, options=options, configuration=get_pdfkit_config())
 
     response = HttpResponse(pdf, content_type='application/pdf')
     filename = f"laporan_simple_{transaksi.client.nama_client}_{transaksi.tanggal}.pdf"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+@login_required
+def export_penjualan_pdf(request, pk):
+    """Export a single penjualan to PDF (Nota)."""
+    try:
+        import pdfkit
+    except ImportError:
+        messages.error(request, 'pdfkit belum diinstall. Jalankan: pip install pdfkit')
+        return redirect('finance:penjualan_list')
+
+    qs = Penjualan.objects.select_related('dinas')
+    if not request.user.is_superuser:
+        qs = qs.filter(user=request.user)
+    penjualan = get_object_or_404(qs, pk=pk)
+    details = penjualan.details.all()
+
+    template = get_template('finance/penjualan_pdf.html')
+    html = template.render({
+        'penjualan': penjualan,
+        'details': details,
+        'request': request,
+    })
+
+    options = {
+        'page-size': 'A4',
+        'margin-top': '0.75in',
+        'margin-right': '0.75in',
+        'margin-bottom': '0.75in',
+        'margin-left': '0.75in',
+        'encoding': "UTF-8",
+        'enable-local-file-access': "",
+    }
+    
+    try:
+        pdf = pdfkit.from_string(html, False, options=options, configuration=get_pdfkit_config())
+    except Exception as e:
+        print(f"PDFKIT EXCEPTION: {e}")
+        messages.error(request, f'Gagal membuat PDF. Pastikan wkhtmltopdf sudah diinstall. Error detail: {str(e)}')
+        return redirect('finance:penjualan_list')
+
+    response = HttpResponse(pdf, content_type='application/pdf')
+    filename = f"Nota_{penjualan.no_nota}_{penjualan.dinas.nama_dinas}.pdf"
+
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
     return response
